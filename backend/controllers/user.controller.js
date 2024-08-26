@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 export const register = async (req, rep) => {
     try {
         const { fullname, email, phoneNumber, password, role } = req.body;
@@ -38,52 +39,62 @@ export const login = async (req, rep) => {
         const { email, password, role } = req.body;
         if (!email || !password || !role) {
             return rep.status(400).json({
-                message: "Somethig is missing",
+                message: "Something is missing",
                 success: false
-            })
+            });
         }
+
         const user = await User.findOne({ email });
         if (!user) {
             return rep.status(400).json({
                 message: "Incorrect email or password",
                 success: false,
-            })
+            });
         }
+
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         if (!isPasswordMatch) {
             return rep.status(400).json({
                 message: "Incorrect email or password",
                 success: false,
-            })
+            });
         }
+
         if (role !== user.role) {
             return rep.status(400).json({
-                message: "Account doesn't exist with currect role",
+                message: "Account doesn't exist with the correct role",
                 success: false
-            })
+            });
         }
+
         const tokenData = {
             userId: user._id
-        }
-        const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expires: '1d' });
-        user = {
+        };
+        const token = jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
+
+        const userResponse = {
             _id: user._id,
             fullname: user.fullname,
             email: user.email,
             phoneNumber: user.phoneNumber,
             role: user.role,
             profile: user.profile
-        }
-        return rep.status(200).cookie('token', token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'strict' }).json({
+        };
+
+        return rep.status(200).cookie('token', token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({
             message: `Welcome back ${user.fullname}`,
-            user,
+            user: userResponse,
             success: true
-        })
+        });
     }
     catch (error) {
-        console.log("Something went wrong");
+        console.log("Something went wrong", error);
+        return rep.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
     }
-}
+};
 
 export const logout = async (req, rep) => {
     try {
