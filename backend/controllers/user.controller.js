@@ -111,13 +111,10 @@ export const updateProfile = async (req, rep) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
         const file = req.file;
-        if (!fullname || !email || !phoneNumber || !bio || !skills) {
-            return rep.status(400).json({
-                message: "Something went wrong",
-                success: false
-            })
+        let skillsArray;
+        if(skills){
+         skillsArray = skills.split(",");
         }
-        const skillsArray = skills.split(",");
         const userId = req.id;
         let user = await User.findById(userId);
         if (!user) {
@@ -127,11 +124,11 @@ export const updateProfile = async (req, rep) => {
             })
         }
         // updating data
-        user.fullname = fullname,
-            user.email = email,
-            user.profile.bio = bio,
-            user.phoneNumber = phoneNumber,
-            user.profile.skills = skillsArray
+        if(fullname) user.fullname = fullname;
+          if(email) user.email = email;
+            if(bio) user.profile.bio = bio;
+           if(phoneNumber) user.phoneNumber = phoneNumber;
+           if(skills) user.profile.skills = skillsArray;
         // will add resume code later 
         await user.save();
         user = {
