@@ -1,4 +1,5 @@
 import { Company } from "../models/company.model.js";
+
 export const registerCompany = async (req, rep) => {
     try {
         const { companyName } = req.body;
@@ -6,32 +7,39 @@ export const registerCompany = async (req, rep) => {
             return rep.status(400).json({
                 message: "Company name is required",
                 success: false
-            })
+            });
         }
-        let company = Company.find({ name: companyName });
+
+        // Check if the company already exists
+        let company = await Company.findOne({ name: companyName });
         if (company) {
             return rep.status(400).json({
                 message: "You can't register the same company",
-                success: true
-            })
+                success: false
+            });
         }
+
+        // Create a new company
         company = await Company.create({
             name: companyName,
             userId: req.id
-        })
+        });
+
         return rep.status(200).json({
             message: "Company registered successfully",
-            success: true
-        })
+            success: true,
+            company // Optional: Include the newly created company in the response
+        });
     }
     catch (error) {
         console.log(error);
         return rep.status(500).json({
             message: "Internal server error",
             success: false
-        })
+        });
     }
-}
+};
+
 
 export const getCompany = async (req, rep) => {
     try {
