@@ -2,7 +2,7 @@ import { Company } from "../models/company.model.js";
 
 export const registerCompany = async (req, rep) => {
     try {
-        const { companyName } = req.body;
+        const  {companyName}  = req.body;
         if (!companyName) {
             return rep.status(400).json({
                 message: "Company name is required",
@@ -28,7 +28,7 @@ export const registerCompany = async (req, rep) => {
         return rep.status(200).json({
             message: "Company registered successfully",
             success: true,
-            company // Optional: Include the newly created company in the response
+            company 
         });
     }
     catch (error) {
@@ -40,17 +40,21 @@ export const registerCompany = async (req, rep) => {
     }
 };
 
-
+ 
 export const getCompany = async (req, rep) => {
     try {
         const userId = req.id;
-        let companies = Company.find({ userid });
+        let companies = Company.find({ userId });
         if (!companies) {
             return rep.status(404).json({
                 message: "Companies not found",
                 success: false
             })
         }
+        return rep.status(200).json({
+            companies,
+            success:true
+        })
     }
     catch (error) {
         console.log(error);
