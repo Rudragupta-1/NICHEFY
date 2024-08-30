@@ -23,6 +23,10 @@ const jobSchema=new mongoose.Schema({
         type:String,
         required:true
     },
+    experience:{
+        type:Number,
+        required:true
+    },
     position:{
         type:Number,
         required:true
@@ -34,12 +38,12 @@ const jobSchema=new mongoose.Schema({
     },
     created_by:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'user',
+        ref:'User',
         required:true
     },
     applications:[
         {
-            type:mongoose.Scheema.Types.ObjectId,
+            type:mongoose.Schema.Types.ObjectId,
             ref:"Application"
         }
     ]
