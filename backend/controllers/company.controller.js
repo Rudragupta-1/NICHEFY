@@ -43,27 +43,28 @@ export const registerCompany = async (req, rep) => {
  
 export const getCompany = async (req, rep) => {
     try {
-        const userId = req.id;
-        let companies = Company.find({ userId });
-        if (!companies) {
+        const userId = req.id; // req.id is set by the authentication middleware
+        const companies = await Company.find({ userId });
+        
+        if (!companies || companies.length === 0) {
             return rep.status(404).json({
                 message: "Companies not found",
                 success: false
-            })
+            });
         }
+
         return rep.status(200).json({
             companies,
-            success:true
-        })
-    }
-    catch (error) {
+            success: true
+        });
+    } catch (error) {
         console.log(error);
         return rep.status(500).json({
             message: "Internal server error",
             success: false
-        })
+        });
     }
-}
+};
 export const getCompanyById = async (req, rep) => {
     try {
         const companyId = req.params.id;
