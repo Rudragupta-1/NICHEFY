@@ -88,28 +88,33 @@ export const getCompanyById = async (req, rep) => {
         })
     }
 }
+
 export const updateCompany = async (req, rep) => {
     try {
-        const { name, description, website, location } = req.body;
-        const file = req.file;
-        const updateData = { name, description, website, company };
-        const company = await Company.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        const companyId = req.params.id; 
+        const userId = req.id; 
+
+        let company = await Company.findOne({ _id: companyId, userId });
+
         if (!company) {
             return rep.status(404).json({
-                message: "Company not found",
+                message: "Company not found or not authorized",
                 success: false
-            })
+            });
         }
+
+        company = await Company.findByIdAndUpdate(companyId, req.body, { new: true });
+
         return rep.status(200).json({
-            message: "Company information updated",
+            message: "Company updated successfully",
+            company,
             success: true
-        })
-    }
-    catch (error) {
-        console.log(error);
+        });
+    } catch (error) {
+        console.error(error);
         return rep.status(500).json({
             message: "Internal server error",
             success: false
-        })
+        });
     }
-}
+};
