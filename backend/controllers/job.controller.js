@@ -66,7 +66,7 @@ export const getAllJobs = async (req, res) => {
             message:"Internal server error",
             success:false
         })
-    }
+    } 
 }
 // student
 export const getJobById = async (req, res) => {
