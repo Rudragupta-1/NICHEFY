@@ -1,64 +1,118 @@
 import { Job } from "../models/job.model.js";
-import { Company } from "../models/company.model.js";  // Make sure to import the Company model
 
+// admin post krega job
 export const postJob = async (req, res) => {
     try {
-        const {
-            title,
-            description,
-            requirements,
-            salary,
-            location,
-            jobType,
-            experience,
-            position,
-            companyId
-        } = req.body;
-        // Correct way to find a company by its ID
-        const company = await Company.findById(companyId);
-        
-        if (!company || company.userId.toString() !== req.id) {
+        const { title, description, requirements, salary, location, jobType, experience, position, companyId } = req.body;
+        const userId = req.id;
+
+        if (!title || !description || !requirements || !salary || !location || !jobType || !experience || !position || !companyId) {
             return res.status(400).json({
-                message: "Company not found or not authorized",
+                message: "Somethin is missing.",
                 success: false
-            });
-        }
-        const existingJob=await Job.findOne({
-            title,
-            company:companyId,
-            location
-        })
-        if(existingJob){
-            return res.status(400).json({
-                message:"Job exist already with the same title,company and location",
-                success:false
             })
-        }
-        // Creating a new job with all the necessary fields
-        const newJob = new Job({
+        };
+        const job = await Job.create({
             title,
             description,
-            requirements,
-            salary,
+            requirements: requirements.split(","),
+            salary: Number(salary),
             location,
             jobType,
-            experience,
+            experienceLevel: experience,
             position,
-            company: companyId, // Associate job with the company
-            created_by: req.id   // Set the user who created the job
+            company: companyId,
+            created_by: userId
         });
-
-        await newJob.save();
-
-        return res.status(200).json({
-            message: "Job posted successfully",
+        return res.status(201).json({
+            message: "New job created successfully.",
+            job,
             success: true
         });
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            message: "Internal server error",
-            success: false
-        });
+            message:"Internal server error",
+            success:false
+        })
     }
-};
+}
+// student k liye
+export const getAllJobs = async (req, res) => {
+    try {
+        const keyword = req.query.keyword || "";
+        const query = {
+            $or: [
+                { title: { $regex: keyword, $options: "i" } },
+                { description: { $regex: keyword, $options: "i" } },
+            ]
+        };
+        const jobs = await Job.find(query).populate({
+            path: "company"
+        }).sort({ createdAt: -1 });
+        if (!jobs) {
+            return res.status(404).json({
+                message: "Jobs not found.",
+                success: false
+            })
+        };
+        return res.status(200).json({
+            jobs,
+            success: true
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message:"Internal server error",
+            success:false
+        })
+    }
+}
+// student
+export const getJobById = async (req, res) => {
+    try {
+        const jobId = req.params.id;
+        const job = await Job.findById(jobId).populate({
+            path:"applications"
+        });
+        if (!job) {
+            return res.status(404).json({
+                message: "Jobs not found.",
+                success: false
+            })
+        };
+        return res.status(200).json({ job, success: true });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message:"Internal server error",
+            success:false
+        })
+    }
+}
+// admin kitne job create kra hai abhi tk
+export const getAdminJobs = async (req, res) => {
+    try {
+        const adminId = req.id;
+        const jobs = await Job.find({ created_by: adminId }).populate({
+            path:'company',
+            createdAt:-1
+        });
+        if (!jobs) {
+            return res.status(404).json({
+                message: "Jobs not found.",
+                success: false
+            })
+        };
+        return res.status(200).json({
+            jobs,
+            success: true
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message:"Internal server error",
+            success:false
+        })
+    }
+}
