@@ -5,6 +5,9 @@
 // node js - global object =global
 // can not perform dom
 //  writing drone interface  , terminla create , native , servers we can made and a lot more.
+
+// which database to choose
+//  on the basis of cap -> consistency , availability and partition tolerance.
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
