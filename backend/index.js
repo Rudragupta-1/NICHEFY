@@ -1,3 +1,10 @@
+// diff between nodejs and browser 
+// Ans . Browser - global object = window 
+// we do not have file system access
+// browser have web apis {dom} 
+// node js - global object =global
+// can not perform dom
+//  writing drone interface  , terminla create , native , servers we can made and a lot more.
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
